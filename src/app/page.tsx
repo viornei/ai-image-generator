@@ -1,27 +1,56 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Button, Input, Image, Text, VStack, SimpleGrid } from "@chakra-ui/react";
+import { Box, Button, Input, Image, Text, VStack, SimpleGrid, Flex } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import supabase from "@/utils/supabaseClient";
 
 type HistoryItem = {
+    id: number;
     prompt: string;
     negative_prompt: string;
     imageUrl: string;
     created_at: string;
+    user_id: string;
+};
+
+type User = {
+    id: string;
+    email: string;
 };
 
 export default function Home() {
     const [prompt, setPrompt] = useState("");
-    const [negativePrompt, setNegativePrompt] = useState("worst quality, low quality"); // ✅ По умолчанию
+    const [negativePrompt, setNegativePrompt] = useState("worst quality, low quality");
     const [imageUrl, setImageUrl] = useState("");
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [user, setUser] = useState<User | null>(null);
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data, error } = await supabase.auth.getUser();
+            
+            if (error) {
+                console.error("Ошибка получения пользователя:", error.message);
+            }
+    
+            if (data?.user) {
+                setUser({ id: data.user.id, email: data.user.email! });
+                loadHistory(data.user.id);
+            } else {
+                setUser(null);
+            }
+        };
+        fetchUser();
+    }, []);
+    
 
-    //генерация 
     const generateImage = async () => {
         if (!prompt.trim()) {
             alert("Введите описание изображения!");
+            return;
+        }
+        if (!user) {
+            alert("Войдите, чтобы использовать генератор!");
             return;
         }
 
@@ -53,7 +82,6 @@ export default function Home() {
         setLoading(false);
     };
 
-    //загрузка  в Cloudinary
     const uploadToCloudinary = async (imageUrl: string) => {
         try {
             const response = await fetch("/api/upload", {
@@ -68,9 +96,8 @@ export default function Home() {
                 setImageUrl(data.secure_url);
                 console.log("Изображение загружено в Cloudinary:", data.secure_url);
 
-                await saveToHistory(prompt, negativePrompt, data.secure_url);
-
-                await loadHistory();
+                await saveToHistory(user!.id, prompt, negativePrompt, data.secure_url);
+                await loadHistory(user!.id);
             } else {
                 alert("Ошибка загрузки в Cloudinary");
             }
@@ -79,13 +106,12 @@ export default function Home() {
         }
     };
 
-    //сохранение в Supabase
-    const saveToHistory = async (prompt: string, negative_prompt: string, imageUrl: string) => {
-        if (!prompt || !imageUrl) return;
+    const saveToHistory = async (userId: string, prompt: string, negative_prompt: string, imageUrl: string) => {
+        if (!userId || !prompt || !imageUrl) return;
 
         const { error } = await supabase
             .from("history")
-            .insert([{ prompt, negative_prompt, imageUrl, created_at: new Date().toISOString() }]);
+            .insert([{ user_id: userId, prompt, negative_prompt, imageUrl, created_at: new Date().toISOString() }]);
 
         if (error) {
             console.error("Ошибка сохранения в Supabase:", error.message);
@@ -94,11 +120,11 @@ export default function Home() {
         }
     };
 
-    //загрузки истории генераций
-    const loadHistory = async () => {
+    const loadHistory = async (userId: string) => {
         const { data, error } = await supabase
             .from("history")
             .select("*")
+            .eq("user_id", userId)
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -108,14 +134,40 @@ export default function Home() {
         }
     };
 
-    useEffect(() => {
-        loadHistory();
-    }, []);
+    const signIn = async (provider: "google" | "discord") => {
+        const { error } = await supabase.auth.signInWithOAuth({ provider });
+        if (error) console.error(`Ошибка входа через ${provider}:`, error.message);
+    };
+
+    const signOut = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setHistory([]);
+        window.location.reload(); 
+    };
+    
 
     return (
         <VStack gap={6} p={8}>
+              {user ? (
+                <>
+                    <Text>Вы вошли как: {user.email}</Text>
+                    <Button onClick={signOut} colorScheme="red">
+                        Выйти
+                    </Button>
+                </>
+            ) : (<>
+            <Flex gap={1}>
+                <Button onClick={() => signIn("google")} colorScheme="blue">
+                Войти через Google
+            </Button>
+            <Button onClick={() => signIn("discord")} colorScheme="purple">
+                Войти через Discord
+            </Button>
+            </Flex>
+            </>
+            )}
             <Text fontSize="2xl" fontWeight="bold">AI Image Generator</Text>
-
             <Input
                 placeholder="Введите описание изображения..."
                 value={prompt}
@@ -158,19 +210,19 @@ export default function Home() {
             )}
 
             <Text fontSize="xl" fontWeight="bold">История генераций:</Text>
-{history.length > 0 ? (
-    <SimpleGrid columns={[1, 2, 3, 4]} gap={4} mt={4}> 
-        {history.map((item, index) => (
-            <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
-                <Text fontWeight="bold">Промт: {item.prompt}</Text>
-                <Text fontSize="sm" color="gray.500">Негативный промт: {item.negative_prompt}</Text>
-                <Image src={item.imageUrl} alt="Сгенерированное изображение" borderRadius="md" boxSize="150px" />
-            </Box>
-        ))}
-    </SimpleGrid>
-) : (
-    <Text color="gray.500">История пока пуста</Text>
-)}
+            {history.length > 0 ? (
+                <SimpleGrid columns={[1, 2, 3, 4]} gap={4} mt={4}>
+                    {history.map((item, index) => (
+                        <Box key={index} p={4} borderWidth="1px" borderRadius="lg">
+                            <Text fontWeight="bold">Промт: {item.prompt}</Text>
+                            <Text fontSize="sm" color="gray.500">Негативный промт: {item.negative_prompt}</Text>
+                            <Image src={item.imageUrl} alt="Сгенерированное изображение" borderRadius="md" boxSize="150px" />
+                        </Box>
+                    ))}
+                </SimpleGrid>
+            ) : (
+                <Text color="gray.500">История пока пуста</Text>
+            )}
         </VStack>
     );
 }
