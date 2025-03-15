@@ -43,23 +43,37 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [user, setUser] = useState<User | null>(null);
-    useEffect(() => {
+ useEffect(() => {
     const fetchUser = async () => {
         const { data, error } = await supabase.auth.getUser();
 
-     if (error || !data?.user) {
-        console.warn("Пользователь не авторизован"); 
-        setUser(null);
-        return;
-    }
+        if (error || !data?.user) {
+            console.warn("Пользователь не авторизован");
+            setUser(null);
+            return;
+        }
 
         const user = { id: data.user.id, email: data.user.email! };
         setUser(user);
         await fetchOrCreateUser(user);
         loadHistory(user.id);
+
+        const { data: userData, error: userError } = await supabase
+            .from("users")
+            .select("default_negative_prompt")
+            .eq("id", user.id)
+            .single();
+
+        if (userError) {
+            console.error("Ошибка загрузки данных профиля:", userError.message);
+        } else if (userData?.default_negative_prompt) {
+            setNegativePrompt(userData.default_negative_prompt);
+        }
     };
+
     fetchUser();
 }, []);
+
 
 
     const generateImage = async () => {

@@ -10,6 +10,7 @@ export default function Profile() {
     const [displayName, setDisplayName] = useState("");
     const [negativePrompt, setNegativePrompt] = useState("");
     const [avatarUrl, setAvatarUrl] = useState("");
+     const [loading, setLoading] = useState(false); 
     const router = useRouter();
    useEffect(() => {
         const fetchUser = async () => {
@@ -33,14 +34,22 @@ export default function Profile() {
                 setDisplayName(userData.display_name || "");
                 setNegativePrompt(userData.default_negative_prompt || "");
                 setAvatarUrl(userData.avatar_url || data.user.user_metadata.avatar_url || "");
+                localStorage.setItem("negativePrompt", userData.default_negative_prompt || "");
+
             }
         };
 
         fetchUser();
     }, [router]);
+useEffect(() => {
+    if (user) {
+        localStorage.setItem("negativePrompt", negativePrompt);
+    }
+}, [negativePrompt]);
 
     const updateProfile = async () => {
         if (!user) return;
+         setLoading(true)
         const { error } = await supabase
             .from("users")
             .update({
@@ -49,11 +58,13 @@ export default function Profile() {
                 avatar_url: avatarUrl,
             })
             .eq("id", user.id);
+            setLoading(false)
 
         if (error) {
             console.error("Ошибка обновления профиля:", error.message);
         } else {
             alert("Данные обновлены!");
+             localStorage.setItem("negativePrompt", negativePrompt); 
         }
     };
 
@@ -76,7 +87,7 @@ export default function Profile() {
                 onChange={(e) => setNegativePrompt(e.target.value)}
                 placeholder="Негативный промт"
             />
-            <Button onClick={updateProfile} colorScheme="blue">
+            <Button onClick={updateProfile} colorScheme="blue"  loading={loading}>
                 Сохранить
             </Button>
             <Button onClick={() => router.push("/")} colorScheme="gray">
