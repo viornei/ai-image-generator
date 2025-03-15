@@ -13,7 +13,7 @@ import {
     HStack,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import supabase from "@/utils/supabaseClient";
+import { redirectURI, supabase } from "@/utils/supabaseClient";
 import { useRouter } from "next/navigation";
 
 type HistoryItem = {
@@ -183,11 +183,16 @@ export default function Home() {
         }
     };
 
-    const signIn = async (provider: "google" | "discord") => {
-        const { error } = await supabase.auth.signInWithOAuth({ provider });
-        if (error)
-            console.error(`Ошибка входа через ${provider}:`, error.message);
-    };
+const signIn = async (provider: "google" | "discord") => {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: redirectURI },
+    });
+
+    if (error) {
+        console.error(`Ошибка входа через ${provider}:`, error.message);
+    }
+};
 
     const signOut = async () => {
         await supabase.auth.signOut();
@@ -206,7 +211,7 @@ export default function Home() {
             const { error: insertError } = await supabase.from("users").insert({
                 id: user.id,
                 email: user.email,
-                display_name: user.email.split("@")[0], // По умолчанию имя = email без @
+                display_name: user.email.split("@")[0],
                 avatar_url: "",
                 default_negative_prompt: "worst quality, low quality",
             });
@@ -218,7 +223,7 @@ export default function Home() {
                 );
             }
         } else if (!error) {
-            // Если пользователь уже есть — загружаем его данные
+            // Если пользователь уже есть загружаем его данные
             setUser({
                 id: data.id,
                 email: data.email,
@@ -235,7 +240,7 @@ export default function Home() {
                 {user ? (
                     <>
                         <Flex direction="row" justify="space-between"  width="100%">
-                            <Flex direction="column">
+                            <Flex direction="column" fontSize='12px'>
                                 <Text>Вы вошли как:</Text>
                                 <Text>{user.email}</Text>
                             </Flex>
@@ -250,7 +255,7 @@ export default function Home() {
                         </Flex>
                     </>
                 ) : (
-                       <Flex direction="row" justify='flex-end' gap={6} width="100%">
+                        <Flex direction="row" justify={{ base: "center", md: "flex-end" }} gap={6} width="100%" p={1}>
                            <Button
                                 onClick={() => signIn("google")}
                                 colorScheme="blue"
@@ -265,7 +270,7 @@ export default function Home() {
                             </Button>
                         </Flex> 
                 )}
-                <Flex  direction='column' align='center' width="50%" gap={6}>
+                <Flex    direction="column" align="center" width="100%" maxWidth="600px"  gap={6}>
                 <Text fontSize="2xl" fontWeight="bold">
                     AI Image Generator
                 </Text>
