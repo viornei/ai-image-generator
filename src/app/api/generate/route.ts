@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
 
-// Обрабатываем POST-запрос
 export async function POST(req: NextRequest) {
     try {
         const { prompt } = await req.json();
@@ -22,12 +21,10 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Подключаемся к Replicate API
         const replicate = new Replicate({ auth: apiKey });
 
         console.log("Отправляем запрос в Replicate...");
 
-        // Отправляем запрос на генерацию изображения
         const prediction = await replicate.predictions.create({
             version:
                 "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",
@@ -41,7 +38,6 @@ export async function POST(req: NextRequest) {
 
         console.log("Ждем завершения генерации...");
 
-        // Ждем завершения обработки
         let result = prediction;
         while (result.status !== "succeeded" && result.status !== "failed") {
             await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -49,7 +45,6 @@ export async function POST(req: NextRequest) {
             console.log("Текущий статус:", result.status);
         }
 
-        // Если генерация завершилась с ошибкой
         if (result.status === "failed") {
             return NextResponse.json(
                 { error: "Image generation failed" },
@@ -57,7 +52,6 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Получаем URL изображения
         const imageUrl = result.output ? result.output[0] : null;
         if (!imageUrl) {
             return NextResponse.json(

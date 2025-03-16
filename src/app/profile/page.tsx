@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; 
 import { Button, Input, VStack, Avatar, Text, Flex } from "@chakra-ui/react";
-import { supabase } from "@/utils/supabaseClient";
-import { User } from "@/hooks/useAuth"; 
+import { supabase } from "../../shared/lib/supabaseClient";
+import { User } from "@/features/auth/hooks/useAuth"; 
 import { toaster } from "@/components/ui/toaster";
 
 export default function Profile() {

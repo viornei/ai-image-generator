@@ -18,6 +18,7 @@ export async function generateImage(
         toaster.create({
             title: "Ошибка",
             description: "Введите описание изображения",
+            type: "error"
         });
         return;
     }
@@ -25,6 +26,7 @@ export async function generateImage(
         toaster.create({
             title: "Ошибка",
             description: "Войдите, чтобы использовать генератор",
+            type: "error",
         });
         return;
     }

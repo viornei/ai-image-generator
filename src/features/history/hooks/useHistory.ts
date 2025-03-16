@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "../../../shared/lib/supabaseClient";
 
 export type HistoryItem = {
     id: number;
@@ -40,20 +40,18 @@ export default function useHistory(userId: string | null) {
     ) => {
         if (!userId || !prompt || !imageUrl) return;
 
-        const { error } = await supabase
-            .from("history")
-            .insert([
-                {
-                    user_id: userId,
-                    prompt,
-                    negative_prompt,
-                    imageUrl,
-                    created_at: new Date().toISOString(),
-                },
-            ]);
+        const { error } = await supabase.from("history").insert([
+            {
+                user_id: userId,
+                prompt,
+                negative_prompt,
+                imageUrl,
+                created_at: new Date().toISOString(),
+            },
+        ]);
 
         if (!error) {
-            loadHistory(userId); 
+            loadHistory(userId);
         }
     };
 

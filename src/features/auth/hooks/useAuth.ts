@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { supabase, redirectURI } from "@/utils/supabaseClient";
+import { supabase, redirectURI } from "../../../shared/lib/supabaseClient";
 import { toaster } from "@/components/ui/toaster";
 
 export type User = {

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button, Input, VStack, Text } from "@chakra-ui/react";
-import { generateImage } from "@/utils/generateImage";
+import { generateImage } from "@/features/generation/generateImage";
 
 interface PromptFormProps {
     userId: string | null;

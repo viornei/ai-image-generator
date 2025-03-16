@@ -2,10 +2,10 @@
 import React from "react";
 import { VStack, Flex, HStack, Button, Text, Box, Image, Link } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
-import useAuth from "@/hooks/useAuth";
-import useHistory from "@/hooks/useHistory";
-import PromptForm from "@/components/promptForm";
-import History from "@/components/history";
+import useAuth from "@/features/auth/hooks/useAuth";
+import useHistory from "@/features/history/hooks/useHistory";
+import PromptForm from "@/features/generation/components/promptForm";
+import History from "@/features/history/components/history";
 
 export default function Home() {
     const router = useRouter();
@@ -14,11 +14,13 @@ export default function Home() {
     const [imageUrl, setImageUrl] = React.useState(""); 
 
     return (
-        <Flex width="100vw">
-            <VStack gap={8} p={6} width="100%">
+        <Flex width="100vw" justify='center' >
+            <VStack gap={12} p={3} width="100%">
                 {user ? (
-                    <Flex direction="row" justify="space-between" width="100%">
-                        <Text>Вы вошли как: {user.email}</Text>
+                    <Flex direction="row" justify="space-between" width="100%" gap={2}>
+                        <VStack textAlign="left" align="flex-start" gap={1} fontSize={["sm", "md"]}>
+                            <Text>Вы вошли как:</Text>
+                            <Text>{user.email}</Text></VStack>
                         <HStack gap={3}>
                             <Button onClick={() => router.push("/profile")}>Профиль</Button>
                             <Button onClick={signOut} colorScheme="red">Выйти</Button>
@@ -37,7 +39,6 @@ export default function Home() {
                     saveToHistory={saveToHistory} 
                     setImageUrl={setImageUrl} 
                 />
-                
                 {imageUrl && (
                     <Box textAlign="center" mt={4}>
                         <Image src={imageUrl} alt="Сгенерированное изображение" borderRadius="md" boxShadow="lg" />
