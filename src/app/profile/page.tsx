@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; 
-import { Button, Input, VStack, Avatar, Text } from "@chakra-ui/react";
+import { Button, Input, VStack, Avatar, Text, Flex } from "@chakra-ui/react";
 import { supabase } from "@/utils/supabaseClient";
 import { User } from "@/hooks/useAuth"; 
 import { toaster } from "@/components/ui/toaster";
@@ -107,7 +107,8 @@ useEffect(() => {
     if (!user) return <Text>Загрузка...</Text>;
 
     return (
-        <VStack gap={4} p={6}>
+        <Flex width="100%" justify='center'>
+        <VStack gap={4} p={6} width="100%"  maxWidth="600px"> 
             <Avatar.Root size="xl">
                 <Avatar.Fallback name={displayName} />
                 <Avatar.Image src={avatarUrl}  />
@@ -129,6 +130,7 @@ useEffect(() => {
             <Button onClick={() => router.push("/")} colorScheme="gray">
                 Назад
             </Button>
-        </VStack>
+            </VStack>
+            </Flex>
     );
 }

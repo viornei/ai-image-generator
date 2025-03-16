@@ -19,7 +19,6 @@ export default function useAuth() {
             const { data, error } = await supabase.auth.getUser();
 
             if (error || !data?.user) {
-                console.warn("Пользователь не авторизован");
                 setUser(null);
                 setLoading(false);
                 return;
@@ -32,10 +31,6 @@ export default function useAuth() {
                 .single();
 
             if (userError || !userData) {
-                console.error(
-                    "Ошибка загрузки данных профиля:",
-                    userError?.message,
-                );
                 setUser(null);
             } else {
                 setUser(userData);
@@ -65,8 +60,7 @@ export default function useAuth() {
             await supabase.auth.signOut();
             setUser(null);
             window.location.reload();
-        } catch (error) {
-            console.error("Ошибка при выходе:", error);
+        } catch {
             toaster.create({
                 title: "Ошибка выхода",
                 description: "Произошла ошибка при выходе. Попробуйте снова.",
