@@ -1,7 +1,8 @@
-"use client"; // Next.js 13+ требует "use client" для клиентских компонентов
+"use client"; 
 import React from "react";
 
 import { Provider } from "@/components/ui/provider";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RootLayout({
     children,
@@ -11,7 +12,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
-                <Provider>{children}</Provider>
+                <Provider>{children}  <Toaster/></Provider>
             </body>
         </html>
     );

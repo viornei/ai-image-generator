@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; 
 import { Button, Input, VStack, Avatar, Text } from "@chakra-ui/react";
 import { supabase } from "@/utils/supabaseClient";
-import { User } from "../page";
+import { User } from "@/hooks/useAuth"; 
+import { toaster } from "@/components/ui/toaster";
 
 export default function Profile() {
     const [user, setUser] = useState<User | null>(null);
@@ -12,6 +13,7 @@ export default function Profile() {
     const [avatarUrl, setAvatarUrl] = useState("");
      const [loading, setLoading] = useState(false); 
     const router = useRouter();
+    
    useEffect(() => {
         const fetchUser = async () => {
             const { data, error } = await supabase.auth.getUser();
@@ -48,25 +50,59 @@ useEffect(() => {
 }, [negativePrompt]);
 
     const updateProfile = async () => {
-        if (!user) return;
-         setLoading(true)
+    if (!user) return;
+
+    if (!displayName.trim()) {
+        toaster.create({
+            title: "Ошибка!",
+            description: "Имя не может быть пустым.",
+            type: "error",
+        });
+        return;
+    }
+
+    setLoading(true);
+
+    try {
         const { error } = await supabase
             .from("users")
             .update({
-                display_name: displayName,
-                default_negative_prompt: negativePrompt,
+                display_name: displayName.trim(),
+                default_negative_prompt: negativePrompt.trim(),
                 avatar_url: avatarUrl,
             })
             .eq("id", user.id);
-            setLoading(false)
 
         if (error) {
             console.error("Ошибка обновления профиля:", error.message);
-        } else {
-            alert("Данные обновлены!");
-             localStorage.setItem("negativePrompt", negativePrompt); 
+            toaster.create({
+                title: "Ошибка!",
+                description: "Не удалось обновить профиль.",
+                type: "error",
+            });
+            return;
         }
-    };
+
+        toaster.create({
+            title: "Успех!",
+            description: "Данные профиля обновлены.",
+            type: "success",
+        });
+
+        localStorage.setItem("negativePrompt", negativePrompt);
+
+    } catch (error) {
+        console.error("Ошибка при обновлении профиля:", error);
+        toaster.create({
+            title: "Ошибка!",
+            description: "Что-то пошло не так. Попробуйте снова.",
+            type: "error",
+        });
+    } finally {
+        setLoading(false);
+    }
+};
+
 
     if (!user) return <Text>Загрузка...</Text>;
 
