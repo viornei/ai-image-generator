@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { VStack, Flex, HStack, Button, Text, Box, Image } from "@chakra-ui/react";
+import { VStack, Flex, HStack, Button, Text, Box, Image, Link } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth";
 import useHistory from "@/hooks/useHistory";
@@ -41,6 +41,13 @@ export default function Home() {
                 {imageUrl && (
                     <Box textAlign="center" mt={4}>
                         <Image src={imageUrl} alt="Сгенерированное изображение" borderRadius="md" boxShadow="lg" />
+                        <Link
+                            mt={6}
+                            colorScheme="blue"
+                            href={imageUrl}
+                            download="generated_image.png"
+                            target="_blank">
+                            <Button colorScheme="blue">Скачать изображение</Button>    </Link>
                     </Box>
                 )}
                 
