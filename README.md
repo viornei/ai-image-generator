@@ -1,4 +1,17 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Stack
+Frontend:
+Next.js (App Router)
+React + TypeScript
+Chakra UI
+Framer Motion (анимации)
+
+Backend & Database:
+Supabase (PostgreSQL, Auth, Storage)
+API Routes в Next.js
+Replicate API (нейронка для генерации изображений)
+Cloudinary (загрузка изображений)
+
 
 ## Getting Started
 
