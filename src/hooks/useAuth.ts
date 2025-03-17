@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { supabase, redirectURI } from "@/shared/lib/supabaseClient";
 import { toaster } from "@/components/ui/toaster";
+import { redirectURI, supabase } from "@/shared/lib/supabaseClient";
 
 export type User = {
     id: string;
@@ -11,7 +11,7 @@ export type User = {
     avatar_url?: string;
 };
 
-export default function useAuth() {
+export function useAuth() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -19,7 +19,7 @@ export default function useAuth() {
         const fetchUser = async () => {
             const { data, error } = await supabase.auth.getUser();
 
-            if (error || !data?.user || !data.user.id || !data.user.email) {
+            if (error || !data?.user || !data.user.email) {
                 setUser(null);
                 setLoading(false);
                 return;
@@ -44,7 +44,22 @@ export default function useAuth() {
             .eq("id", user.id)
             .single();
 
-        if (error || !data) {
+        if (error && error.code !== "PGRST116") { 
+            
+            console.error("Ошибка загрузки данных пользователя:", error.message);
+            return null; 
+            
+        }
+
+        if (!data) {
+            console.warn("Пользователь не найден в таблице, создаём нового...");
+            console.log("Создаём пользователя:", {
+    id: user.id,
+    email: user.email,
+    display_name: user.email.split("@")[0],
+    avatar_url: "",
+    default_negative_prompt: "worst quality, low quality",
+});
             const { error: insertError } = await supabase.from("users").insert({
                 id: user.id,
                 email: user.email,
@@ -53,10 +68,14 @@ export default function useAuth() {
                 default_negative_prompt: "worst quality, low quality",
             });
 
-            if (insertError) return null;
+            if (insertError) {
+                console.error("Ошибка при создании пользователя:", insertError.message);
+                return null;
+            }
 
             return {
                 ...user,
+                email: user.email,
                 display_name: user.email.split("@")[0],
                 avatar_url: "",
                 default_negative_prompt: "worst quality, low quality",
@@ -76,7 +95,6 @@ export default function useAuth() {
             toaster.create({
                 title: "Ошибка входа",
                 description: `Не удалось войти через ${provider}.`,
-                type: "error",
             });
         }
     };
@@ -90,7 +108,6 @@ export default function useAuth() {
             toaster.create({
                 title: "Ошибка выхода",
                 description: "Произошла ошибка при выходе. Попробуйте снова.",
-                type: "error",
             });
         }
     };

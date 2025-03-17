@@ -18,7 +18,7 @@ export async function generateImage(
         toaster.create({
             title: "Ошибка",
             description: "Введите описание изображения",
-            type: "error"
+            type: "error",
         });
         return;
     }
@@ -36,7 +36,7 @@ export async function generateImage(
 
     const finalNegativePrompt = negativePrompt?.trim()
         ? negativePrompt
-        : "worst quality, low quality"; 
+        : "worst quality, low quality";
 
     try {
         const response = await fetch("/api/generate", {

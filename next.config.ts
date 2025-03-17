@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     /* config options here */
-  images: {
-    disableStaticImages: true,
-  },
+    images: {
+        disableStaticImages: true,
+    },
 };
 
 module.exports = nextConfig;

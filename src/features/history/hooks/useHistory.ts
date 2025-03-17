@@ -7,7 +7,7 @@ export type HistoryItem = {
     prompt: string;
     negative_prompt: string;
     imageUrl: string;
-    created_at: string;
+    created_at: string; 
     user_id: string;
 };
 

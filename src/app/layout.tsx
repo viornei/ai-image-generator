@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 import React from "react";
 
 import { Provider } from "@/components/ui/provider";
@@ -12,7 +12,9 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
-                <Provider>{children}  <Toaster/></Provider>
+                <Provider>
+                    {children} <Toaster />
+                </Provider>
             </body>
         </html>
     );
