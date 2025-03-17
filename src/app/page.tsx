@@ -29,8 +29,8 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
         >
-            <Flex width="100vw" justify="center">
-                <VStack gap={8} p={3} width="100%" mt={2}>
+            <Flex width="100%" justify="center">
+                <VStack gap={8} p={4} width="100%" mt={2}>
                     {loading ? (
                         <Spinner size="lg" color="blue.500" />
                     ) : user ? (
